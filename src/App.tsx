@@ -6,6 +6,7 @@ import FeaturePreview from './components/FeaturePreview';
 import BackgroundElements from './components/BackgroundElements';
 import ChatBot from './components/ChatBot';
 import AIChatPage from './components/AIChatPage';
+import DatabaseSetup from './components/DatabaseSetup';
 import { MessageCircle } from 'lucide-react';
 
 function App() {
@@ -51,6 +52,9 @@ function App() {
       {/* Chat Components */}
       <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIChatPage isOpen={isAIChatPageOpen} onClose={closeAIChatPage} />
+      
+      {/* Database Setup Component */}
+      <DatabaseSetup />
     </div>
   );
 }
