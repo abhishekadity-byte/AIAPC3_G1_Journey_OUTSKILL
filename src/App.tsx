@@ -24,11 +24,19 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+
+  const quickSuggestions = [
+    "Plan a 7-day trip to Japan",
+    "Best time to visit Bali?",
+    "Budget Europe itinerary",
+    "Romantic destinations for couples"
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,33 +52,21 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputText(suggestion);
+    setShowSuggestions(false);
+  };
+
   const sendMessageToN8N = async (message: string): Promise<string> => {
     // Check if webhook URL is configured
     if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
-                        );
-                      }
-                      // Handle empty lines as spacing
-                      if (line.trim() === '') {
-                        return <div key={index} className="h-3" />;
-                      }
-                      // Handle headings (lines ending with :)
-                      if (line.endsWith(':') && line.length < 50) {
-                        return (
-                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
-                            {line}
-                          </div>
-                        );
-                      }
-                      // Regular paragraphs
-                      return (
-                        <p key={index} className="mb-2 last:mb-0">
-                          {line}
-                        </p>
-                      );
-                    })}
-                  </div>
+        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
+        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?",
+        "That sounds like an amazing destination! I'd be happy to help you plan. Here are some key things to consider:\n\n• Best time to visit\n• Must-see attractions\n• Local cuisine to try\n• Transportation options\n• Budget considerations\n\nWhat would you like to know more about?",
+        "Great question! Based on your interests, I can create a personalized itinerary. To give you the best recommendations, could you tell me:\n\n• How many days will you be traveling?\n• What's your approximate budget?\n• Are you interested in adventure, culture, relaxation, or a mix?\n• Any specific activities you definitely want to include?"
+      ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
 
@@ -102,6 +98,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
+  };
+
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
@@ -201,7 +199,37 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
                     ? 'bg-gradient-primary text-white'
                     : 'bg-white/10 text-white backdrop-blur-sm'
                 }`}>
-                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  <div className="text-sm leading-relaxed">
+                    {message.text.split('\n').map((line, index) => {
+                      // Handle bullet points
+                      if (line.trim().startsWith('•')) {
+                        return (
+                          <div key={index} className="flex items-start space-x-2 mb-1">
+                            <span className="text-purple-300 mt-1">•</span>
+                            <span>{line.trim().substring(1).trim()}</span>
+                          </div>
+                        );
+                      }
+                      // Handle empty lines as spacing
+                      if (line.trim() === '') {
+                        return <div key={index} className="h-3" />;
+                      }
+                      // Handle headings (lines ending with :)
+                      if (line.endsWith(':') && line.length < 50) {
+                        return (
+                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
+                            {line}
+                          </div>
+                        );
+                      }
+                      // Regular paragraphs
+                      return (
+                        <p key={index} className="mb-2 last:mb-0">
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {message.timestamp.toLocaleTimeString([], { 
