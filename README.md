@@ -1,40 +1,49 @@
 AIAPC3_G1_Journey_OUTSKILL
 
-# 🚨 CRITICAL ERROR FIX NEEDED
+# Journey - AI Travel Assistant
 
-**The app is currently broken because the database table is missing!**
+A beautiful, modern travel planning application with AI-powered assistance and user authentication.
 
-👉 **[CLICK HERE FOR STEP-BY-STEP FIX](./SETUP_DATABASE.md)** 👈
+## ✨ Features
 
-**IMPORTANT**: To fix the "Could not find the table 'public.users'" error, you need to create the users table in your Supabase database.
+- **AI Travel Assistant**: Get personalized travel recommendations and planning help
+- **User Authentication**: Secure signup, login, and profile management
+- **Beautiful UI**: Modern design with smooth animations and responsive layout
+- **Travel Planning**: Interactive features for planning your perfect journey
 
-## Database Setup Instructions
+## 🚀 Getting Started
 
-### Steps to create the users table:
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-1. **Open Supabase Dashboard**: Go to your Supabase project dashboard
-2. **Navigate to SQL Editor**: Click on "SQL Editor" in the left sidebar
-3. **Run Migration**: Copy and paste the contents of `supabase/migrations/create_users_table.sql` into the SQL editor
-4. **Execute**: Click "Run" to create the users table and set up security policies
+2. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-### Alternative Method:
+3. **Environment Setup**:
+   - Copy `.env.example` to `.env`
+   - Add your Supabase credentials
+   - Add your n8n webhook URL (optional)
 
-- Go to "Table Editor" → "New Table" → "Import from SQL"
-- Upload the `create_users_table.sql` file
+## 🔐 Authentication
 
-### Verify Setup:
+The app includes a complete authentication system:
+- User registration and login
+- Secure password hashing with bcrypt
+- Profile management
+- Session persistence
 
-After running the migration, you should see a `users` table in your "Table Editor" with the following columns:
+## 🤖 AI Integration
 
-- id (uuid, primary key)
-- email (text, unique)
-- password_hash (text)
-- first_name (text)
-- last_name (text)
-- is_active (boolean)
-- email_verified (boolean)
-- created_at (timestamptz)
-- updated_at (timestamptz)
-- last_login (timestamptz)
+Connect your n8n workflow for AI-powered travel assistance by setting the `VITE_N8N_WEBHOOK_URL` environment variable.
 
-Once the table is created, the authentication system will work properly.
+## 🛠️ Tech Stack
+
+- **Frontend**: React + TypeScript + Vite
+- **Styling**: Tailwind CSS
+- **Database**: Supabase
+- **Authentication**: Custom implementation with bcrypt
+- **Icons**: Lucide React
