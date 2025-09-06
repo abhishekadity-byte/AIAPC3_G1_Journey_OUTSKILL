@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
-import FeaturePreview from './components/FeaturePreview';
 import FeatureIcons from './components/FeatureIcons';
+import FeaturePreview from './components/FeaturePreview';
 import BackgroundElements from './components/BackgroundElements';
+import ChatBot from './components/ChatBot';
+import AIChatPage from './components/AIChatPage';
+import { MessageCircle } from 'lucide-react';
 
 function App() {
   const [scrollY, setScrollY] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isAIChatPageOpen, setIsAIChatPageOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -14,13 +19,38 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const openAIChatPage = () => {
+    setIsAIChatPageOpen(true);
+  };
+
+  const closeAIChatPage = () => {
+    setIsAIChatPageOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-dark text-white overflow-x-hidden">
+    <div className="min-h-screen bg-dark text-white relative">
       <BackgroundElements scrollY={scrollY} />
+      
       <Header />
-      <Hero scrollY={scrollY} />
-      <FeaturePreview />
-      <FeatureIcons />
+      
+      <main className="relative z-10">
+        <Hero onStartJourney={openAIChatPage} />
+        <FeatureIcons />
+        <FeaturePreview />
+      </main>
+
+      {/* Floating AI Travel Assistant Button */}
+      <button
+        onClick={openAIChatPage}
+        className="fixed bottom-6 right-6 z-40 bg-gradient-primary hover:bg-gradient-secondary text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 flex items-center space-x-2"
+      >
+        <MessageCircle size={24} />
+        <span className="hidden md:inline font-semibold">AI Travel Assistant</span>
+      </button>
+
+      {/* Chat Components */}
+      <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <AIChatPage isOpen={isAIChatPageOpen} onClose={closeAIChatPage} />
     </div>
   );
 }
