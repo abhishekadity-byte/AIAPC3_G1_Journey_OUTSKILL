@@ -31,107 +31,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 
-  // Enhanced message formatting function
-  const formatMessage = (text: string) => {
-    const lines = text.split('\n');
-    const elements: JSX.Element[] = [];
-    let currentIndex = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmedLine = line.trim();
-      
-      // Skip empty lines but add spacing
-      if (trimmedLine === '') {
-        elements.push(<div key={currentIndex++} className="h-2" />);
-        continue;
-      }
-
-      // Handle questions (lines ending with ?)
-      if (trimmedLine.endsWith('?') && trimmedLine.length > 20) {
-        elements.push(
-          <div key={currentIndex++} className="bg-purple-500/20 border border-purple-400/30 rounded-lg p-3 mb-3 mt-2">
-            <div className="flex items-start space-x-2">
-              <span className="text-purple-300 text-lg">❓</span>
-              <p className="text-purple-100 font-medium">{trimmedLine}</p>
-            </div>
-          </div>
-        );
-        continue;
-      }
-
-      // Handle destinations/locations (lines with proper nouns and travel keywords)
-      if (/(Tokyo|Kyoto|Osaka|Japan|Hakone|Mount Fuji|city|temple|garden|nightlife)/i.test(trimmedLine) && trimmedLine.length > 30) {
-        elements.push(
-          <div key={currentIndex++} className="bg-cyan-500/20 border border-cyan-400/30 rounded-lg p-3 mb-3">
-            <div className="flex items-start space-x-2">
-              <span className="text-cyan-300 text-lg">📍</span>
-              <p className="text-cyan-100">{trimmedLine}</p>
-            </div>
-          </div>
-        );
-        continue;
-      }
-
-      // Handle bullet points and lists
-      if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-') || trimmedLine.startsWith('*')) {
-        elements.push(
-          <div key={currentIndex++} className="flex items-start space-x-3 mb-2 ml-2">
-            <span className="text-purple-300 mt-1 text-sm">✨</span>
-            <span className="text-gray-200">{trimmedLine.substring(1).trim()}</span>
-          </div>
-        );
-        continue;
-      }
-
-      // Handle headings (short lines ending with : or lines that look like titles)
-      if ((trimmedLine.endsWith(':') && trimmedLine.length < 50) || 
-          (trimmedLine.length < 60 && /^[A-Z][^.!?]*[A-Za-z]$/.test(trimmedLine))) {
-        elements.push(
-          <div key={currentIndex++} className="font-bold text-lg text-purple-200 mb-3 mt-4 first:mt-0 border-b border-purple-400/30 pb-1">
-            {trimmedLine}
-          </div>
-        );
-        continue;
-      }
-
-      // Handle travel tips or recommendations (lines with "recommend", "suggest", "tip", etc.)
-      if (/(recommend|suggest|tip|advice|consider|should|would|prefer)/i.test(trimmedLine) && trimmedLine.length > 40) {
-        elements.push(
-          <div key={currentIndex++} className="bg-lime-500/20 border border-lime-400/30 rounded-lg p-3 mb-3">
-            <div className="flex items-start space-x-2">
-              <span className="text-lime-300 text-lg">💡</span>
-              <p className="text-lime-100">{trimmedLine}</p>
-            </div>
-          </div>
-        );
-        continue;
-      }
-
-      // Handle greetings and enthusiastic responses
-      if (/(absolutely|fantastic|perfect|excellent|great|amazing)/i.test(trimmedLine.substring(0, 20))) {
-        elements.push(
-          <div key={currentIndex++} className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-lg p-3 mb-3">
-            <div className="flex items-start space-x-2">
-              <span className="text-pink-300 text-lg">🎉</span>
-              <p className="text-white font-medium">{trimmedLine}</p>
-            </div>
-          </div>
-        );
-        continue;
-      }
-
-      // Regular paragraphs with better spacing
-      elements.push(
-        <p key={currentIndex++} className="mb-3 text-gray-200 leading-relaxed">
-          {trimmedLine}
-        </p>
-      );
-    }
-
-    return elements;
-  };
-
   const quickSuggestions = [
     "Plan a 7-day trip to Japan",
     "Best time to visit Bali?",
@@ -246,6 +145,38 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const formatMessage = (text: string) => {
+    return text.split('\n').map((line, index) => {
+      // Handle bullet points
+      if (line.trim().startsWith('•')) {
+        return (
+          <div key={index} className="flex items-start space-x-2 mb-1">
+            <span className="text-purple-300 mt-1">•</span>
+            <span>{line.trim().substring(1).trim()}</span>
+          </div>
+        );
+      }
+      // Handle empty lines as spacing
+      if (line.trim() === '') {
+        return <div key={index} className="h-3" />;
+      }
+      // Handle headings (lines ending with :)
+      if (line.endsWith(':') && line.length < 50) {
+        return (
+          <div key={index} className="font-semibold text-purple-200 mb-2">
+            {line}
+          </div>
+        );
+      }
+      // Regular text
+      return (
+        <div key={index} className="mb-1">
+          {line}
+        </div>
+      );
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -299,35 +230,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
                     : 'bg-white/10 text-white backdrop-blur-sm'
                 }`}>
                   <div className="text-sm leading-relaxed">
-                    {message.text.split('\n').map((line, index) => {
-                      // Handle bullet points
-                      if (line.trim().startsWith('•')) {
-                        return (
-                          <div key={index} className="flex items-start space-x-2 mb-1">
-                            <span className="text-purple-300 mt-1">•</span>
-                            <span>{line.trim().substring(1).trim()}</span>
-                          </div>
-                        );
-                      }
-                      // Handle empty lines as spacing
-                      if (line.trim() === '') {
-                        return <div key={index} className="h-3" />;
-                      }
-                      // Handle headings (lines ending with :)
-                      if (line.endsWith(':') && line.length < 50) {
-                        return (
-                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
-                            {line}
-                          </div>
-                        );
-                      }
-                      // Regular paragraphs
-                      return (
-                        <p key={index} className="mb-2 last:mb-0">
-                          {line}
-                        </p>
-                      );
-                    })}
+                    {formatMessage(message.text)}
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
