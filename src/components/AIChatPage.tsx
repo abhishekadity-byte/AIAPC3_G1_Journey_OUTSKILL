@@ -184,15 +184,25 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
 
       const data = await response.json();
       
+      // Debug logging
+      console.log('n8n Response:', data);
+      console.log('Response type:', typeof data);
+      console.log('Is array:', Array.isArray(data));
+      
       // Handle n8n array response format
       if (Array.isArray(data) && data.length > 0 && data[0].output) {
-        return data[0].output.response || data[0].output.message || "I'm here to help with your travel planning!";
+        const response = data[0].output.response || data[0].output.message;
+        console.log('Extracted response:', response);
+        return response || "I'm here to help with your travel planning!";
       }
       
       // Handle direct response format (fallback)
-      return data.response || data.message || "I'm here to help with your travel planning!";
+      const directResponse = data.response || data.message;
+      console.log('Direct response:', directResponse);
+      return directResponse || "I'm here to help with your travel planning!";
     } catch (error) {
-      console.warn('n8n webhook not accessible, using fallback response:', error.message);
+      console.error('n8n webhook error:', error);
+      console.error('Error message:', error.message);
       // Fallback responses for demo purposes
       const fallbackResponses = [
         "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
