@@ -62,8 +62,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
-        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
-        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
@@ -255,8 +253,10 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           
           <div ref={messagesEndRef} />
         </div>
+
+        {/* Quick Suggestions */}
         {showSuggestions && messages.length === 1 && (
-          <div className="px-6 pb-4 max-w-4xl mx-auto w-full">
+          <div className="px-6 pb-4">
             <p className="text-sm text-gray-400 mb-3">Quick suggestions:</p>
             <div className="flex flex-wrap gap-2">
               {quickSuggestions.map((suggestion, index) => (
@@ -273,8 +273,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Input */}
-        <div className="p-6 border-t border-white/10 bg-dark/95 backdrop-blur-xl">
-          <div className="max-w-4xl mx-auto w-full">
+        <div className="p-6 border-t border-white/10">
           <div className="flex items-center space-x-3">
             <input
               ref={inputRef}
@@ -297,7 +296,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           <p className="text-xs text-gray-500 mt-2 text-center">
             Connected to n8n workflow • Press Enter to send
           </p>
-          </div>
         </div>
       </div>
     </div>
