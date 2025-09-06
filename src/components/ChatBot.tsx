@@ -119,15 +119,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       console.log('Direct response:', directResponse);
       return directResponse || "I'm here to help with your travel planning!";
     } catch (error) {
-        console.log('Extracted response:', response);
-        return response || "I'm here to help with your travel planning!";
-      }
-      
-      // Handle direct response format (fallback)
-      const directResponse = data.response || data.message;
-      console.log('Direct response:', directResponse);
-      return directResponse || "I'm here to help with your travel planning!";
-    } catch (error) {
       console.error('n8n webhook error:', error);
       console.error('Error message:', error.message);
       // Fallback responses for demo purposes
