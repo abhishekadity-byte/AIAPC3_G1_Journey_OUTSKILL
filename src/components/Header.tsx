@@ -7,6 +7,7 @@ import UserProfile from './UserProfile';
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginModalMode, setLoginModalMode] = useState<'login' | 'signup'>('login');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user } = useAuth();
 
@@ -17,6 +18,16 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const openLoginModal = () => {
+    setLoginModalMode('login');
+    setIsLoginModalOpen(true);
+  };
+
+  const openSignupModal = () => {
+    setLoginModalMode('signup');
+    setIsLoginModalOpen(true);
+  };
 
   return (
     <header 
@@ -53,13 +64,13 @@ const Header = () => {
             ) : (
               <>
                 <button 
-                  onClick={() => setIsLoginModalOpen(true)}
+                  onClick={openLoginModal}
                   className="btn-secondary"
                 >
                   Log In
                 </button>
                 <button 
-                  onClick={() => setIsLoginModalOpen(true)}
+                  onClick={openSignupModal}
                   className="btn-primary"
                 >
                   Sign Up
@@ -72,6 +83,7 @@ const Header = () => {
       
       <LoginModal 
         isOpen={isLoginModalOpen} 
+        initialMode={loginModalMode}
         onClose={() => setIsLoginModalOpen(false)} 
       />
       <UserProfile 

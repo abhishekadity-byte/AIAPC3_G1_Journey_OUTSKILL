@@ -4,11 +4,12 @@ import { useAuth } from '../hooks/useAuth';
 
 interface LoginModalProps {
   isOpen: boolean;
+  initialMode?: 'login' | 'signup';
   onClose: () => void;
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const [isLogin, setIsLogin] = useState(true);
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, initialMode = 'login', onClose }) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,6 +21,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, signup } = useAuth();
+
+  // Update mode when initialMode changes
+  React.useEffect(() => {
+    setIsLogin(initialMode === 'login');
+  }, [initialMode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
