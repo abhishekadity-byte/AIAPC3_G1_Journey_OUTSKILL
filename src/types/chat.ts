@@ -9,6 +9,7 @@ export interface N8NWebhookPayload {
   message: string;
   timestamp: string;
   sessionId: string;
+  userId: string | null;
 }
 
 export interface N8NWebhookResponse {

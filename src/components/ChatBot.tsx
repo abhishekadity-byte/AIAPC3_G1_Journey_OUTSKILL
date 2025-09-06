@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface Message {
   id: string;
@@ -27,6 +28,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
@@ -78,6 +80,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           message: message,
           timestamp: new Date().toISOString(),
           sessionId: `session_${Date.now()}`, // Simple session ID
+          userId: user?.id || null,
         }),
       });
 

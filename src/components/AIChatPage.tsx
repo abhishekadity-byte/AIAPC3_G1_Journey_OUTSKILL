@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Loader2, Maximize2, Minimize2 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface Message {
   id: string;
@@ -28,6 +29,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   // Create persistent session ID that remains the same until component unmounts
   const [sessionId] = useState(() => {
@@ -170,6 +172,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
           message: message,
           timestamp: new Date().toISOString(),
           sessionId: sessionId, // Use persistent session ID
+          userId: user?.id || null,
         }),
       });
 
