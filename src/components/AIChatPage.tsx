@@ -189,9 +189,28 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
       console.log('Response type:', typeof data);
       console.log('Is array:', Array.isArray(data));
       
-      // Handle n8n array response format
+      // Handle n8n response format - both single object and array
+      let extractedResponse = null;
+      
       if (Array.isArray(data) && data.length > 0 && data[0].output) {
-        const response = data[0].output.response || data[0].output.message;
+        // Array format: [{ output: { response: "..." } }]
+        extractedResponse = data[0].output.response || data[0].output.message;
+        console.log('Extracted response from array:', extractedResponse);
+      } else if (data.output) {
+        // Single object format: { output: { response: "..." } }
+        extractedResponse = data.output.response || data.output.message;
+        console.log('Extracted response from object:', extractedResponse);
+      }
+      
+      if (extractedResponse) {
+        return extractedResponse;
+      }
+      
+      // Handle direct response format (fallback)
+      const directResponse = data.response || data.message;
+      console.log('Direct response:', directResponse);
+      return directResponse || "I'm here to help with your travel planning!";
+    } catch (error) {
         console.log('Extracted response:', response);
         return response || "I'm here to help with your travel planning!";
       }
