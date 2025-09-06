@@ -183,6 +183,13 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
       }
 
       const data = await response.json();
+      
+      // Handle n8n array response format
+      if (Array.isArray(data) && data.length > 0 && data[0].output) {
+        return data[0].output.response || data[0].output.message || "I'm here to help with your travel planning!";
+      }
+      
+      // Handle direct response format (fallback)
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
       console.warn('n8n webhook not accessible, using fallback response:', error.message);

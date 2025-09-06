@@ -15,6 +15,18 @@ export interface N8NWebhookPayload {
 }
 
 export interface N8NWebhookResponse {
+  // Array format from n8n
+  0?: {
+    output: {
+      response?: string;
+      message?: string;
+      metadata?: {
+        confidence?: number;
+        sources?: string[];
+      };
+    };
+  };
+  // Direct format (fallback)
   response?: string;
   message?: string;
   error?: string;
