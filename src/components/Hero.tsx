@@ -2,9 +2,10 @@ import React from 'react';
 
 interface HeroProps {
   scrollY: number;
+  onStartJourney: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ scrollY }) => {
+const Hero: React.FC<HeroProps> = ({ scrollY, onStartJourney }) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 py-20">
       <div 
@@ -21,7 +22,10 @@ const Hero: React.FC<HeroProps> = ({ scrollY }) => {
           one place, fr
         </p>
         
-        <button className="btn-hero group">
+        <button 
+          className="btn-hero group"
+          onClick={onStartJourney}
+        >
           <span className="relative z-10">Start Your Journey</span>
           <div className="absolute inset-0 bg-gradient-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
         </button>
