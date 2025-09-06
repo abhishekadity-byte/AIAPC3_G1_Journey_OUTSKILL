@@ -24,11 +24,20 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+
+  const quickSuggestions = [
+    "Plan a 7-day trip to Japan",
+    "Best time to visit Bali?",
+    "Budget Europe itinerary",
+    "Romantic destinations",
+    "Pack for Iceland winter"
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -87,6 +96,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputText(suggestion);
+    setShowSuggestions(false);
+  };
+
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
