@@ -51,7 +51,16 @@ export const useAuthProvider = () => {
         .eq('is_active', true)
         .single();
 
-      if (fetchError || !userData) {
+      if (fetchError) {
+        // Handle specific case where user doesn't exist
+        if (fetchError.code === 'PGRST116' || fetchError.details === 'The result contains 0 rows') {
+          return { success: false, error: 'Invalid email or password' };
+        }
+        console.error('Database error:', fetchError);
+        return { success: false, error: 'An error occurred during login' };
+      }
+
+      if (!userData) {
         return { success: false, error: 'Invalid email or password' };
       }
 
