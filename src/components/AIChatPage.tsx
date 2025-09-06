@@ -1,45 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2, Heart, MapPin, Mic, Volume2, HelpCircle } from 'lucide-react';
+import { X, Send, Bot, User, Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
-  hasMap?: boolean;
-  hasImages?: boolean;
-  relatedQuestions?: string[];
 }
 
-interface AIChatPageProps {
+interface ChatBotProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
+const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Best Time to Visit Bali for Ideal Weather and Fewer Crowds",
+      text: "Hi! I'm your AI travel assistant. I can help you plan your perfect journey, find destinations, create itineraries, and answer any travel questions you have.\n\nHere are some things you can ask me:\n• \"Plan a 7-day trip to Japan\"\n• \"What's the best time to visit Bali?\"\n• \"Create a budget itinerary for Europe\"\n• \"Suggest romantic destinations for couples\"\n• \"Help me pack for a winter trip to Iceland\"\n\nHow can I help you today?",
       sender: 'bot',
-      timestamp: new Date(),
-      hasMap: true,
-      hasImages: true,
-      relatedQuestions: [
-        "What are the average temperatures in Bali during the low tourist season?",
-        "Which months have the lowest rainfall and pleasant humidity in Bali?",
-        "How does crowd density vary between the dry and wet seasons in Bali?",
-        "What are the best months for family-friendly activities with fewer tourists in Bali?"
-      ]
+      timestamp: new Date()
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+
+  const quickSuggestions = [
+    "Plan a 7-day trip to Japan",
+    "Best time to visit Bali?",
+    "Budget Europe itinerary",
+    "Romantic destinations for couples"
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,11 +52,16 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputText(suggestion);
+    setShowSuggestions(false);
+  };
+
   const sendMessageToN8N = async (message: string): Promise<string> => {
-    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com')) {
+    // Check if webhook URL is configured
+    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
+      console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
-        "Based on your query, I can provide detailed travel insights. The best time to visit most tropical destinations is during the shoulder seasons when you'll find ideal weather conditions with fewer crowds and better prices.",
-        "Great question! I can help you plan the perfect timing for your trip. Weather patterns, local events, and tourist seasons all play important roles in determining the ideal travel dates."
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
@@ -73,7 +75,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
         body: JSON.stringify({
           message: message,
           timestamp: new Date().toISOString(),
-          sessionId: `session_${Date.now()}`,
+          sessionId: `session_${Date.now()}`, // Simple session ID
         }),
       });
 
@@ -84,8 +86,13 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
       const data = await response.json();
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
-      console.warn('n8n webhook not accessible, using fallback response:', error);
-      return "I can help you with that! Let me provide some travel insights based on your query.";
+      console.warn('n8n webhook not accessible, using fallback response:', error.message);
+      // Fallback responses for demo purposes
+      const fallbackResponses = [
+        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
+        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
+      ];
+      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
   };
 
@@ -102,6 +109,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
+    setShowSuggestions(false);
 
     try {
       const botResponse = await sendMessageToN8N(userMessage.text);
@@ -110,15 +118,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
         id: (Date.now() + 1).toString(),
         text: botResponse,
         sender: 'bot',
-        timestamp: new Date(),
-        hasMap: Math.random() > 0.5,
-        hasImages: Math.random() > 0.3,
-        relatedQuestions: Math.random() > 0.5 ? [
-          "What's the weather like during peak season?",
-          "Are there any local festivals to consider?",
-          "What are the accommodation prices like?",
-          "How crowded are the main attractions?"
-        ] : undefined
+        timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
@@ -143,273 +143,163 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleRelatedQuestion = (question: string) => {
-    setInputText(question);
-  };
-
-  const toggleListening = () => {
-    setIsListening(!isListening);
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-            <Bot size={20} className="text-white" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-2xl h-[600px] bg-dark/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
+              <Bot size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">AI Travel Assistant</h3>
+              <p className="text-sm text-gray-400">Powered by Journey AI</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">AI Travel Assistant</h3>
-            <p className="text-sm text-gray-500">Powered by Journey AI</p>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <X size={16} className="text-white" />
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-        >
-          <X size={16} className="text-gray-600" />
-        </button>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Left Panel - Chat */}
-        <div className="flex-1 flex flex-col bg-gray-50">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {messages.map((message) => (
-              <div key={message.id} className="mb-8">
-                {message.sender === 'bot' ? (
-                  <div className="space-y-6">
-                    {/* Bot Message Header */}
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                        <Bot size={16} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">{message.text}</h2>
-                        <div className="flex items-center space-x-4 mb-4">
-                          <button className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors">
-                            <Heart size={16} />
-                            <span className="text-sm">Add to trip</span>
-                          </button>
-                          <div className="flex items-center space-x-2 text-gray-500">
-                            <MapPin size={16} />
-                            <span className="text-sm">Bali, Indonesia</span>
-                          </div>
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="prose prose-gray max-w-none">
-                          <p className="text-gray-700 leading-relaxed">
-                            The best time to visit <span className="inline-flex items-center space-x-1">
-                              <Heart size={14} className="text-red-500" />
-                              <span>Bali</span>
-                            </span> for good weather and fewer crowds is during the shoulder seasons of April to June and September to early October. These months offer pleasant, dry weather ideal for exploring <span className="inline-flex items-center space-x-1">
-                              <Heart size={14} className="text-red-500" />
-                              <span>Bali's</span>
-                            </span> nature, beaches, waterfalls, and cultural sites, while avoiding the peak tourist influx seen in July and August. Traveling during these periods allows for a more peaceful experience on the island, with comfortable temperatures and less congestion at popular points of interest.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Images Grid */}
-                    {message.hasImages && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-11">
-                        <div className="aspect-video bg-gradient-to-br from-green-400 to-blue-500 rounded-lg relative overflow-hidden">
-                          <img 
-                            src="https://images.pexels.com/photos/2166559/pexels-photo-2166559.jpeg?auto=compress&cs=tinysrgb&w=400" 
-                            alt="Bali temple" 
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">ℹ</span>
-                          </div>
-                        </div>
-                        <div className="aspect-video bg-gradient-to-br from-orange-400 to-pink-500 rounded-lg relative overflow-hidden">
-                          <img 
-                            src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg?auto=compress&cs=tinysrgb&w=400" 
-                            alt="Bali beach" 
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">ℹ</span>
-                          </div>
-                        </div>
-                        <div className="aspect-video bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg relative overflow-hidden">
-                          <img 
-                            src="https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=400" 
-                            alt="Bali rice terraces" 
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">ℹ</span>
-                          </div>
-                        </div>
-                        <div className="aspect-video bg-gradient-to-br from-cyan-400 to-teal-500 rounded-lg relative overflow-hidden">
-                          <img 
-                            src="https://images.pexels.com/photos/1450340/pexels-photo-1450340.jpeg?auto=compress&cs=tinysrgb&w=400" 
-                            alt="Bali temple architecture" 
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">ℹ</span>
-                          </div>
-                        </div>
-                        <div className="aspect-video bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg relative overflow-hidden">
-                          <img 
-                            src="https://images.pexels.com/photos/2166650/pexels-photo-2166650.jpeg?auto=compress&cs=tinysrgb&w=400" 
-                            alt="Bali sunset" 
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">ℹ</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Related Questions */}
-                    {message.relatedQuestions && (
-                      <div className="ml-11">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <User size={16} className="text-gray-500" />
-                          <span className="text-sm font-medium text-gray-700">People like you also asked</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {message.relatedQuestions.map((question, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleRelatedQuestion(question)}
-                              className="text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all duration-200 text-sm text-gray-700 hover:text-gray-900"
-                            >
-                              {question}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex items-start space-x-3 ${
+                message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                message.sender === 'user' 
+                  ? 'bg-gradient-secondary' 
+                  : 'bg-gradient-primary'
+              }`}>
+                {message.sender === 'user' ? (
+                  <User size={16} className="text-white" />
                 ) : (
-                  <div className="flex items-start space-x-3 justify-end">
-                    <div className="max-w-[80%] text-right">
-                      <div className="inline-block p-3 rounded-2xl bg-blue-500 text-white">
-                        <div className="text-sm leading-relaxed">{message.text}</div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {message.timestamp.toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                      <User size={16} className="text-white" />
-                    </div>
-                  </div>
+                  <Bot size={16} className="text-white" />
                 )}
               </div>
-            ))}
-            
-            {isLoading && (
-              <div className="flex items-start space-x-3 mb-8">
-                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                  <Bot size={16} className="text-white" />
-                </div>
-                <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                  <div className="flex items-center space-x-2">
-                    <Loader2 size={16} className="text-blue-500 animate-spin" />
-                    <span className="text-sm text-gray-600">AI is thinking...</span>
+              <div className={`max-w-[80%] ${
+                message.sender === 'user' ? 'text-right' : 'text-left'
+              }`}>
+                <div className={`inline-block p-3 rounded-2xl ${
+                  message.sender === 'user'
+                    ? 'bg-gradient-primary text-white'
+                    : 'bg-white/10 text-white backdrop-blur-sm'
+                }`}>
+                  <div className="text-sm leading-relaxed">
+                    {message.text.split('\n').map((line, index) => {
+                      // Handle bullet points
+                      if (line.trim().startsWith('•')) {
+                        return (
+                          <div key={index} className="flex items-start space-x-2 mb-1">
+                            <span className="text-purple-300 mt-1">•</span>
+                            <span>{line.trim().substring(1).trim()}</span>
+                          </div>
+                        );
+                      }
+                      // Handle empty lines as spacing
+                      if (line.trim() === '') {
+                        return <div key={index} className="h-3" />;
+                      }
+                      // Handle headings (lines ending with :)
+                      if (line.endsWith(':') && line.length < 50) {
+                        return (
+                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
+                            {line}
+                          </div>
+                        );
+                      }
+                      // Regular paragraphs
+                      return (
+                        <p key={index} className="mb-2 last:mb-0">
+                          {line}
+                        </p>
+                      );
+                    })}
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {message.timestamp.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
               </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="p-6 bg-white border-t border-gray-200">
-            <div className="flex items-center space-x-3">
-              <button className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
-                <HelpCircle size={18} className="text-gray-600" />
-              </button>
-              <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="I'm listening"
-                  className="w-full bg-gray-100 border-0 rounded-full px-6 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                  disabled={isLoading}
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                  <button
-                    onClick={toggleListening}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                      isListening ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    }`}
-                  >
-                    <Mic size={16} />
-                  </button>
-                  <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
-                    <Volume2 size={16} className="text-gray-600" />
-                  </button>
+            </div>
+          ))}
+          
+          {isLoading && (
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
+                <Bot size={16} className="text-white" />
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3">
+                <div className="flex items-center space-x-2">
+                  <Loader2 size={16} className="text-white animate-spin" />
+                  <span className="text-sm text-white">AI is thinking...</span>
                 </div>
               </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputText.trim() || isLoading}
-                className="w-12 h-12 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send size={18} className="text-white" />
-              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Support • Connected to n8n workflow
-            </p>
-          </div>
+          )}
+          
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Right Panel - Map */}
-        <div className="w-96 bg-gray-200 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-green-500 opacity-20"></div>
-          <div className="absolute top-4 left-4 right-4">
-            <div className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
-              Best Time to Visit Bali for Good Weather and Fewer Crowds
+        {/* Quick Suggestions */}
+        {showSuggestions && messages.length === 1 && (
+          <div className="px-6 pb-4">
+            <p className="text-sm text-gray-400 mb-3">Quick suggestions:</p>
+            <div className="flex flex-wrap gap-2">
+              {quickSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="px-3 py-2 text-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-full text-white transition-all duration-200 hover:scale-105"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-gray-600 text-center">
-              <MapPin size={48} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Interactive Map</p>
-              <p className="text-xs opacity-75">Bali, Indonesia</p>
-            </div>
-          </div>
-          {/* Map controls */}
-          <div className="absolute top-20 right-4 space-y-2">
-            <button className="w-8 h-8 bg-white rounded border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50">
-              <span className="text-sm font-bold">+</span>
+        )}
+
+        {/* Input */}
+        <div className="p-6 border-t border-white/10">
+          <div className="flex items-center space-x-3">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask me anything about travel planning..."
+              className="flex-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+              disabled={isLoading}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputText.trim() || isLoading}
+              className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              <Send size={18} className="text-white" />
             </button>
-            <button className="w-8 h-8 bg-white rounded border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50">
-              <span className="text-sm font-bold">−</span>
-            </button>
           </div>
-          <div className="absolute bottom-4 right-4">
-            <button className="w-8 h-8 bg-white rounded border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50">
-              <MapPin size={16} />
-            </button>
-          </div>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Connected to n8n workflow • Press Enter to send
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default AIChatPage;
+export default ChatBot;
