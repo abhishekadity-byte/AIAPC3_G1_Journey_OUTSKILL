@@ -28,7 +28,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // N8N webhook URL - replace with your actual n8n webhook URL
-  const N8N_WEBHOOK_URL = process.env.VITE_N8N_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/chat';
+  const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/chat';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
