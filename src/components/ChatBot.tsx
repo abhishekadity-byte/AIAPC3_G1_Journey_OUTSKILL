@@ -24,20 +24,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // N8N webhook URL - replace with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
-
-  const quickSuggestions = [
-    "Plan a 7-day trip to Japan",
-    "Best time to visit Bali?",
-    "Budget Europe itinerary",
-    "Romantic destinations",
-    "Pack for Iceland winter"
-  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,8 +49,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
-        "That sounds like an amazing destination! I'd be happy to help you plan your trip there. What type of activities are you most interested in?",
-        "Great question! For travel planning, I recommend considering factors like budget, time of year, and your interests. Would you like me to help you create a personalized itinerary?",
         "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
         "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
       ];
@@ -96,13 +85,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputText(suggestion);
-    setShowSuggestions(false);
-  };
-
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
