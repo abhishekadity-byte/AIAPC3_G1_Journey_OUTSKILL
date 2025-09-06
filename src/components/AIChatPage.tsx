@@ -145,38 +145,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const formatMessage = (text: string) => {
-    return text.split('\n').map((line, index) => {
-      // Handle bullet points
-      if (line.trim().startsWith('•')) {
-        return (
-          <div key={index} className="flex items-start space-x-2 mb-1">
-            <span className="text-purple-300 mt-1">•</span>
-            <span>{line.trim().substring(1).trim()}</span>
-          </div>
-        );
-      }
-      // Handle empty lines as spacing
-      if (line.trim() === '') {
-        return <div key={index} className="h-3" />;
-      }
-      // Handle headings (lines ending with :)
-      if (line.endsWith(':') && line.length < 50) {
-        return (
-          <div key={index} className="font-semibold text-purple-200 mb-2">
-            {line}
-          </div>
-        );
-      }
-      // Regular text
-      return (
-        <div key={index} className="mb-1">
-          {line}
-        </div>
-      );
-    });
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -230,7 +198,35 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
                     : 'bg-white/10 text-white backdrop-blur-sm'
                 }`}>
                   <div className="text-sm leading-relaxed">
-                    {formatMessage(message.text)}
+                    {message.text.split('\n').map((line, index) => {
+                      // Handle bullet points
+                      if (line.trim().startsWith('•')) {
+                        return (
+                          <div key={index} className="flex items-start space-x-2 mb-1">
+                            <span className="text-purple-300 mt-1">•</span>
+                            <span>{line.trim().substring(1).trim()}</span>
+                          </div>
+                        );
+                      }
+                      // Handle empty lines as spacing
+                      if (line.trim() === '') {
+                        return <div key={index} className="h-3" />;
+                      }
+                      // Handle headings (lines ending with :)
+                      if (line.endsWith(':') && line.length < 50) {
+                        return (
+                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
+                            {line}
+                          </div>
+                        );
+                      }
+                      // Regular paragraphs
+                      return (
+                        <p key={index} className="mb-2 last:mb-0">
+                          {line}
+                        </p>
+                      );
+                    })}
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
@@ -259,10 +255,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           
           <div ref={messagesEndRef} />
         </div>
-
-        {/* Quick Suggestions */}
         {showSuggestions && messages.length === 1 && (
-          <div className="px-6 pb-4">
+          <div className="px-6 pb-4 max-w-4xl mx-auto w-full">
             <p className="text-sm text-gray-400 mb-3">Quick suggestions:</p>
             <div className="flex flex-wrap gap-2">
               {quickSuggestions.map((suggestion, index) => (
@@ -279,7 +273,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Input */}
-        <div className="p-6 border-t border-white/10">
+        <div className="p-6 border-t border-white/10 bg-dark/95 backdrop-blur-xl">
+          <div className="max-w-4xl mx-auto w-full">
           <div className="flex items-center space-x-3">
             <input
               ref={inputRef}
@@ -302,6 +297,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           <p className="text-xs text-gray-500 mt-2 text-center">
             Connected to n8n workflow • Press Enter to send
           </p>
+          </div>
         </div>
       </div>
     </div>
