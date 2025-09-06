@@ -62,6 +62,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
+        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
+        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
@@ -212,19 +214,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
                       }
                       // Handle headings (lines ending with :)
                       if (line.endsWith(':') && line.length < 50) {
-                        return (
-                          <div key={index} className="font-semibold text-purple-200 mb-2 mt-3 first:mt-0">
-                            {line}
-                          </div>
-                        );
-                      }
-                      // Regular paragraphs
-                      return (
-                        <p key={index} className="mb-2 last:mb-0">
-                          {line}
-                        </p>
-                      );
-                    })}
+                  <div className="text-sm leading-relaxed">
+                    {formatMessage(message.text)}
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
