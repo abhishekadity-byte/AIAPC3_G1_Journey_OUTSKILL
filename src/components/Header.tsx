@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { User } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import LoginModal from './LoginModal';
+import UserProfile from './UserProfile';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,11 +40,44 @@ const Header = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <button className="btn-secondary">Log In</button>
-            <button className="btn-primary">Sign Up</button>
+            {user ? (
+              <button 
+                onClick={() => setIsProfileOpen(true)}
+                className="flex items-center space-x-2 btn-secondary"
+              >
+                <User size={18} />
+                <span className="hidden md:inline">
+                  {user.first_name} {user.last_name}
+                </span>
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="btn-secondary"
+                >
+                  Log In
+                </button>
+                <button 
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="btn-primary"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </nav>
       </div>
+      
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+      <UserProfile 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+      />
     </header>
   );
 };
