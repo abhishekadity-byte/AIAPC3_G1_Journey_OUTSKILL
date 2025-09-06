@@ -17,7 +17,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm your AI travel assistant. I can help you plan your perfect journey, find destinations, create itineraries, and answer any travel questions you have. How can I help you today?",
+      text: "Hi! I'm your AI travel assistant. I can help you plan your perfect journey, find destinations, create itineraries, and answer any travel questions you have.\n\nHere are some things you can ask me:\n• \"Plan a 7-day trip to Japan\"\n• \"What's the best time to visit Bali?\"\n• \"Create a budget itinerary for Europe\"\n• \"Suggest romantic destinations for couples\"\n• \"Help me pack for a winter trip to Iceland\"\n\nHow can I help you today?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -87,8 +87,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       ];
       return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
-  };
-
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
@@ -102,6 +100,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
+    setShowSuggestions(false);
 
     try {
       const botResponse = await sendMessageToN8N(userMessage.text);
@@ -215,6 +214,24 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           
           <div ref={messagesEndRef} />
         </div>
+
+        {/* Quick Suggestions */}
+        {showSuggestions && messages.length === 1 && (
+          <div className="px-6 pb-4">
+            <p className="text-sm text-gray-400 mb-3">Quick suggestions:</p>
+            <div className="flex flex-wrap gap-2">
+              {quickSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="px-3 py-2 text-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-full text-white transition-all duration-200 hover:scale-105"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Input */}
         <div className="p-6 border-t border-white/10">
