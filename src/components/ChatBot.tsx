@@ -81,6 +81,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           timestamp: new Date().toISOString(),
           sessionId: `session_${Date.now()}`, // Simple session ID
           userId: user?.id || null,
+          additional_kwargs: {},
+          response_metadata: {},
         }),
       });
 

@@ -10,6 +10,8 @@ export interface N8NWebhookPayload {
   timestamp: string;
   sessionId: string;
   userId: string | null;
+  additional_kwargs?: Record<string, any>;
+  response_metadata?: Record<string, any>;
 }
 
 export interface N8NWebhookResponse {

@@ -173,6 +173,8 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
           timestamp: new Date().toISOString(),
           sessionId: sessionId, // Use persistent session ID
           userId: user?.id || null,
+          additional_kwargs: {},
+          response_metadata: {},
         }),
       });
 
