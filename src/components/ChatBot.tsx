@@ -46,7 +46,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
 
   const sendMessageToN8N = async (message: string): Promise<string> => {
     // Check if webhook URL is configured
-    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com')) {
+    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
       const fallbackResponses = [
         "That sounds like an amazing destination! I'd be happy to help you plan your trip there. What type of activities are you most interested in?",
@@ -77,7 +77,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       const data = await response.json();
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
-      console.error('Error sending message to n8n:', error);
+      console.warn('n8n webhook not accessible, using fallback response:', error.message);
       // Fallback responses for demo purposes
       const fallbackResponses = [
         "That sounds like an amazing destination! I'd be happy to help you plan your trip there. What type of activities are you most interested in?",
