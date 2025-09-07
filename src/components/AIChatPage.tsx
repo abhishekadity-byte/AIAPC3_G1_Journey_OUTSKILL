@@ -161,10 +161,18 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     }
 
     try {
+      console.log('Sending POST request to:', N8N_WEBHOOK_URL);
+      console.log('Request payload:', {
+        message: message,
+        timestamp: new Date().toISOString(),
+        sessionId: sessionId,
+      });
+
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           message: message,
@@ -173,14 +181,21 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
-      console.warn('n8n webhook not accessible, using fallback response:', error.message);
+      console.error('n8n webhook error:', error);
+      console.warn('Using fallback response due to error:', error.message);
       // Fallback responses for demo purposes
       return getIntelligentFallbackResponse(message);
     }
