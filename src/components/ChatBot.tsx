@@ -59,13 +59,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
 
   const sendMessageToN8N = async (message: string): Promise<string> => {
     // Check if webhook URL is configured
-    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
+    if (!N8N_WEBHOOK_URL || 
+        N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || 
+        N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com') ||
+        N8N_WEBHOOK_URL.includes('localhost') ||
+        N8N_WEBHOOK_URL.includes('127.0.0.1')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
-      const fallbackResponses = [
-        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
-        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
-      ];
-      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return getIntelligentFallbackResponse(message);
     }
 
     try {
@@ -90,14 +90,27 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       console.warn('n8n webhook not accessible, using fallback response:', error.message);
       // Fallback responses for demo purposes
-      const fallbackResponses = [
-        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
-        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
-      ];
-      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return getIntelligentFallbackResponse(message);
     }
   };
 
+  const getIntelligentFallbackResponse = (userMessage: string): string => {
+    const message = userMessage.toLowerCase();
+    
+    if (message.includes('plan') || message.includes('trip')) {
+      return "✈️ I'd love to help you plan your trip! Could you tell me more about your destination preferences, budget range, and what type of experiences you're looking for?";
+    }
+    
+    if (message.includes('budget')) {
+      return "💰 I can help you create a budget-friendly travel plan! What's your target daily budget and preferred destinations?";
+    }
+    
+    if (message.includes('romantic') || message.includes('couple')) {
+      return "💕 For romantic getaways, I'd recommend destinations like Santorini, Paris, or Tuscany. What's your ideal romantic setting?";
+    }
+    
+    return "🌍 I'm here to help with your travel planning! I can assist with destinations, itineraries, budgeting, and travel tips. What would you like to know?";
+  };
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 

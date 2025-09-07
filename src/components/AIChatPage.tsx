@@ -151,13 +151,13 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
 
   const sendMessageToN8N = async (message: string): Promise<string> => {
     // Check if webhook URL is configured
-    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com')) {
+    if (!N8N_WEBHOOK_URL || 
+        N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || 
+        N8N_WEBHOOK_URL.includes('your-actual-n8n-instance.com') ||
+        N8N_WEBHOOK_URL.includes('localhost') ||
+        N8N_WEBHOOK_URL.includes('127.0.0.1')) {
       console.warn('n8n webhook URL not configured. Using fallback response.');
-      const fallbackResponses = [
-        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
-        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
-      ];
-      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return getIntelligentFallbackResponse(message);
     }
 
     try {
@@ -182,14 +182,52 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       console.warn('n8n webhook not accessible, using fallback response:', error.message);
       // Fallback responses for demo purposes
-      const fallbackResponses = [
-        "I can help you with that! Let me suggest some options based on your preferences. What's your ideal travel style - adventure, relaxation, cultural exploration, or a mix?",
-        "Excellent choice! I can provide recommendations for accommodations, activities, and local experiences. What's most important to you for this trip?"
-      ];
-      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return getIntelligentFallbackResponse(message);
     }
   };
 
+  const getIntelligentFallbackResponse = (userMessage: string): string => {
+    const message = userMessage.toLowerCase();
+    
+    // Trip planning responses
+    if (message.includes('plan') || message.includes('trip') || message.includes('itinerary')) {
+      if (message.includes('japan')) {
+        return "🇯🇵 **Japan Travel Plan**\n\nFantastic choice! Japan offers an incredible blend of ancient traditions and modern innovation.\n\n**7-Day Japan Highlights:**\n• **Days 1-3: Tokyo** - Explore Shibuya, visit Senso-ji Temple, experience Harajuku culture\n• **Days 4-5: Kyoto** - Discover Fushimi Inari Shrine, Bamboo Grove, traditional tea ceremonies\n• **Days 6-7: Osaka** - Enjoy street food in Dotonbori, visit Osaka Castle\n\n**Best Time to Visit:** Spring (March-May) for cherry blossoms or Fall (September-November) for autumn colors\n\n**Budget Estimate:** $150-300 per day including accommodation, meals, and activities\n\nWould you like specific recommendations for accommodations or must-try experiences?";
+      }
+      if (message.includes('europe')) {
+        return "🇪🇺 **Europe Adventure Plan**\n\nEurope offers incredible diversity! Here's a suggested route:\n\n**2-Week Europe Highlights:**\n• **Days 1-3: Paris, France** - Eiffel Tower, Louvre, Seine River cruise\n• **Days 4-6: Amsterdam, Netherlands** - Canals, museums, bike tours\n• **Days 7-9: Prague, Czech Republic** - Historic Old Town, castle tours\n• **Days 10-12: Vienna, Austria** - Imperial palaces, coffee culture\n• **Days 13-14: Budapest, Hungary** - Thermal baths, Danube views\n\n**Budget-Friendly Tips:**\n• Use Eurail passes for train travel\n• Stay in hostels or budget hotels\n• Eat at local markets and cafes\n\n**Estimated Budget:** $100-200 per day\n\nWhat type of experiences interest you most - history, art, nightlife, or cuisine?";
+      }
+      return "✈️ **Let's Plan Your Perfect Trip!**\n\nI'd love to help you create an amazing itinerary! To give you the best recommendations, could you tell me:\n\n• **Destination:** Where would you like to go?\n• **Duration:** How many days do you have?\n• **Budget:** What's your approximate budget range?\n• **Interests:** What do you enjoy most - culture, adventure, relaxation, food?\n• **Travel Style:** Luxury, mid-range, or budget-friendly?\n\nOnce I know more about your preferences, I can create a detailed day-by-day plan with specific recommendations for accommodations, activities, and local experiences!";
+    }
+    
+    // Destination-specific responses
+    if (message.includes('bali')) {
+      return "🏝️ **Bali Travel Guide**\n\n**Best Time to Visit:** April-October (dry season)\n\n**Must-Visit Areas:**\n• **Ubud** - Rice terraces, yoga retreats, art galleries\n• **Seminyak** - Beautiful beaches, upscale dining, nightlife\n• **Canggu** - Surf spots, beach clubs, digital nomad scene\n• **Nusa Penida** - Stunning cliffs, crystal clear waters\n\n**Budget Estimates:**\n• Budget: $30-50/day\n• Mid-range: $75-150/day\n• Luxury: $200+/day\n\n**Pro Tips:**\n• Rent a scooter for easy transportation\n• Try local warungs for authentic Indonesian food\n• Book accommodations in advance during peak season\n\nWhat type of Bali experience are you looking for - relaxation, adventure, or cultural immersion?";
+    }
+    
+    // Budget-related responses
+    if (message.includes('budget') || message.includes('cheap') || message.includes('affordable')) {
+      return "💰 **Budget Travel Tips**\n\n**Money-Saving Strategies:**\n• **Accommodation:** Hostels, guesthouses, or Airbnb\n• **Transportation:** Public transport, budget airlines, train passes\n• **Food:** Local markets, street food, cooking facilities\n• **Activities:** Free walking tours, public beaches, hiking trails\n\n**Budget-Friendly Destinations:**\n• **Southeast Asia:** Thailand, Vietnam, Cambodia ($25-50/day)\n• **Eastern Europe:** Poland, Hungary, Czech Republic ($40-80/day)\n• **Central America:** Guatemala, Nicaragua, Mexico ($30-60/day)\n• **South America:** Peru, Bolivia, Ecuador ($35-70/day)\n\n**Budget Planning Tools:**\n• Set daily spending limits\n• Track expenses with apps\n• Book flights and accommodation in advance\n• Consider travel insurance\n\nWhat's your target daily budget and preferred region?";
+    }
+    
+    // Romantic/couples responses
+    if (message.includes('romantic') || message.includes('couple') || message.includes('honeymoon')) {
+      return "💕 **Romantic Destinations for Couples**\n\n**Top Romantic Getaways:**\n\n🇮🇹 **Tuscany, Italy**\n• Wine tastings in Chianti region\n• Sunset dinners in Florence\n• Countryside villa stays\n\n🇬🇷 **Santorini, Greece**\n• Iconic blue-domed churches\n• Spectacular sunset views in Oia\n• Private infinity pool suites\n\n🇫🇷 **Paris, France**\n• Seine river cruises\n• Picnics in Luxembourg Gardens\n• Cozy bistros in Montmartre\n\n🏝️ **Maldives**\n• Overwater bungalows\n• Private beach dinners\n• Couples spa treatments\n\n**Romantic Activities:**\n• Hot air balloon rides\n• Cooking classes together\n• Private guided tours\n• Sunset photography sessions\n\nWhat's your ideal romantic setting - beach, mountains, city, or countryside?";
+    }
+    
+    // Packing responses
+    if (message.includes('pack') || message.includes('luggage') || message.includes('what to bring')) {
+      return "🎒 **Smart Packing Guide**\n\n**Essential Items:**\n• **Documents:** Passport, visas, travel insurance, copies\n• **Electronics:** Phone, chargers, power bank, adapters\n• **Health:** Medications, first aid kit, sunscreen\n• **Clothing:** Weather-appropriate, comfortable walking shoes\n\n**Packing Tips:**\n• Roll clothes to save space\n• Use packing cubes for organization\n• Wear heaviest items on the plane\n• Pack one outfit in carry-on\n\n**Climate-Specific Additions:**\n• **Tropical:** Lightweight, breathable fabrics, insect repellent\n• **Cold Weather:** Layers, waterproof jacket, warm accessories\n• **City Travel:** Dressier options, comfortable walking shoes\n• **Adventure:** Quick-dry clothing, sturdy boots, gear\n\nWhat's your destination and travel style? I can create a specific packing checklist for you!";
+    }
+    
+    // General travel advice
+    if (message.includes('advice') || message.includes('tips') || message.includes('help')) {
+      return "🌟 **Essential Travel Tips**\n\n**Before You Go:**\n• Research visa requirements and vaccinations\n• Notify banks of travel plans\n• Make copies of important documents\n• Check weather and pack accordingly\n\n**While Traveling:**\n• Stay connected with local SIM or international plan\n• Keep emergency contacts handy\n• Respect local customs and dress codes\n• Try local cuisine and experiences\n\n**Safety Tips:**\n• Share itinerary with someone at home\n• Keep valuables secure\n• Trust your instincts\n• Have backup payment methods\n\n**Cultural Immersion:**\n• Learn basic local phrases\n• Use public transportation\n• Shop at local markets\n• Connect with locals through tours or activities\n\nWhat specific aspect of travel would you like more detailed advice on?";
+    }
+    
+    // Default response
+    return "🌍 **Welcome to Your AI Travel Assistant!**\n\nI'm here to help make your travel dreams come true! I can assist you with:\n\n✈️ **Trip Planning:** Custom itineraries for any destination\n🏨 **Accommodations:** Hotel and lodging recommendations\n🍽️ **Local Experiences:** Food, culture, and activities\n💰 **Budget Planning:** Cost estimates and money-saving tips\n🎒 **Packing Guides:** What to bring for any climate\n📍 **Destination Guides:** Insider tips for popular locations\n\n**Popular Questions:**\n• \"Plan a 10-day trip to Thailand\"\n• \"Best time to visit Iceland?\"\n• \"Romantic destinations in Europe\"\n• \"Budget backpacking through South America\"\n\nWhat adventure can I help you plan today? Just tell me where you'd like to go or what kind of experience you're looking for!";
+  };
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
