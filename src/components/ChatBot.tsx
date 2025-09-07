@@ -69,31 +69,36 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      console.log('Sending POST request to:', N8N_WEBHOOK_URL);
-      console.log('Request payload:', {
+      const payload = {
         message: message,
         timestamp: new Date().toISOString(),
         sessionId: `session_${Date.now()}`,
-      });
+      };
 
-      const response = await fetch(N8N_WEBHOOK_URL, {
+      console.log('Sending POST request to:', N8N_WEBHOOK_URL);
+      console.log('Request method: POST');
+      console.log('Request payload:', payload);
+
+      const requestOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify({
-          message: message,
-          timestamp: new Date().toISOString(),
-          sessionId: `session_${Date.now()}`, // Simple session ID
-        }),
-      });
+        body: JSON.stringify(payload),
+        mode: 'cors' as RequestMode,
+      };
+
+      const response = await fetch(N8N_WEBHOOK_URL, requestOptions);
 
       console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
+        console.error('Response error status:', response.status);
+        console.error('Response error text:', errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
@@ -102,6 +107,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
       console.error('n8n webhook error:', error);
+      console.error('Error type:', error.constructor.name);
       console.warn('Using fallback response due to error:', error.message);
       // Fallback responses for demo purposes
       return getIntelligentFallbackResponse(message);

@@ -161,32 +161,45 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      console.log('Sending POST request to:', N8N_WEBHOOK_URL);
-      console.log('Request payload:', {
+      const payload = {
         message: message,
         timestamp: new Date().toISOString(),
         sessionId: sessionId,
+      };
+
+      console.log('Sending POST request to:', N8N_WEBHOOK_URL);
+      console.log('Request method: POST');
+      console.log('Request payload:', payload);
+      console.log('Request headers:', {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       });
 
-      const response = await fetch(N8N_WEBHOOK_URL, {
+      const requestOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify({
-          message: message,
-          timestamp: new Date().toISOString(),
-          sessionId: sessionId, // Use persistent session ID
-        }),
-      });
+        body: JSON.stringify(payload),
+        mode: 'cors' as RequestMode,
+      };
+
+      console.log('Full request options:', requestOptions);
+
+      const response = await fetch(N8N_WEBHOOK_URL, requestOptions);
 
       console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
       console.log('Response headers:', response.headers);
+      console.log('Response URL:', response.url);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
+        console.error('Response error status:', response.status);
+        console.error('Response error text:', errorText);
+        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
@@ -195,6 +208,8 @@ const AIChatPage: React.FC<AIChatPageProps> = ({ isOpen, onClose }) => {
       return data.response || data.message || "I'm here to help with your travel planning!";
     } catch (error) {
       console.error('n8n webhook error:', error);
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
       console.warn('Using fallback response due to error:', error.message);
       // Fallback responses for demo purposes
       return getIntelligentFallbackResponse(message);
